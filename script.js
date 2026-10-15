@@ -1,117 +1,140 @@
-const guessInput = document.getElementById('guess-input');
-const guessBtn = document.getElementById('guess-btn');
-const historyList = document.getElementById('history-list');
+'use strict';
+
+const DIGITS = 4; // 桁数
+
+let answer = [];
+let current = [];
+let history = [];
+let finished = false;
+
+const slotsEl = document.getElementById('slots');
+const keypadEl = document.getElementById('keypad');
+const messageEl = document.getElementById('message');
+const historyEl = document.getElementById('history');
+const countEl = document.getElementById('count');
+const submitBtn = document.getElementById('submit-btn');
+const deleteBtn = document.getElementById('delete-btn');
 const restartBtn = document.getElementById('restart-btn');
 
-let secretCode = [];
-let attempts = 0;
-let isGameOver = false;
-
-// 3桁の重複しないランダムな数字を生成する
-function generateSecret() {
-    let numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-    secretCode = [];
-    
-    // 最初の数字は0以外にする
-    let firstIndex = Math.floor(Math.random() * 9) + 1; // 1〜9
-    secretCode.push(numbers[firstIndex]);
-    numbers.splice(firstIndex, 1);
-
-    // 残り2桁を選ぶ
-    for (let i = 0; i < 2; i++) {
-        let index = Math.floor(Math.random() * numbers.length);
-        secretCode.push(numbers[index]);
-        numbers.splice(index, 1);
-    }
-    
-    console.log("正解の数字 (テスト用):", secretCode.join('')); // デバッグ用
+// 重複なしのランダムな答えを作る
+function createAnswer() {
+  const pool = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, DIGITS);
 }
 
-// ゲーム初期化
-function initGame() {
-    generateSecret();
-    attempts = 0;
-    isGameOver = false;
-    historyList.innerHTML = '';
-    guessInput.value = '';
-    guessInput.disabled = false;
-    guessBtn.disabled = false;
-    restartBtn.style.display = 'none';
+// ヒットとブローを数える
+function judge(guess, ans) {
+  let hit = 0;
+  let blow = 0;
+  guess.forEach((d, i) => {
+    if (d === ans[i]) hit++;
+    else if (ans.includes(d)) blow++;
+  });
+  return { hit, blow };
 }
 
-// 予測の判定処理
-function handleGuess() {
-    if (isGameOver) return;
-
-    let guessVal = guessInput.value.trim();
-
-    // 入力チェック（3桁の数字か、重複がないか）
-    if (!/^\d{3}$/.test(guessVal)) {
-        alert('3桁の半角数字を入力してください！');
-        return;
-    }
-
-    let guessArr = guessVal.split('').map(Number);
-    
-    // 重複チェック
-    let hasDuplicate = new Set(guessArr).size !== guessArr.length;
-    if (hasDuplicate) {
-        alert('同じ数字を複数使うことはできません！');
-        return;
-    }
-
-    attempts++;
-    let hits = 0;
-    let blows = 0;
-
-    // ヒットとブローの計算
-    for (let i = 0; i < 3; i++) {
-        if (guessArr[i] === secretCode[i]) {
-            hits++;
-        } else if (secretCode.includes(guessArr[i])) {
-            blows++;
-        }
-    }
-
-    // 確実に要素を作成して追加
-    const item = document.createElement('div');
-    item.className = 'history-item';
-    
-    const numSpan = document.createElement('span');
-    numSpan.className = 'history-num';
-    numSpan.textContent = `${attempts}回目: ${guessVal}`;
-
-    const resSpan = document.createElement('span');
-    resSpan.className = 'history-result';
-    resSpan.textContent = `${hits} HIT / ${blows} BLOW`;
-
-    item.appendChild(numSpan);
-    item.appendChild(resSpan);
-    
-    // 履歴リストの一番上に追加
-    historyList.insertBefore(item, historyList.firstChild);
-
-    guessInput.value = '';
-
-    // クリア判定
-    if (hits === 3) {
-        isGameOver = true;
-        alert(`🎉 おめでとうございます！ ${attempts}回目で正解しました！`);
-        guessInput.disabled = true;
-        guessBtn.disabled = true;
-        restartBtn.style.display = 'block';
-    }
+function setMessage(text, type = '') {
+  messageEl.textContent = text;
+  messageEl.className = 'message' + (type ? ' ' + type : '');
 }
 
-guessBtn.addEventListener('click', handleGuess);
+function renderSlots() {
+  slotsEl.innerHTML = '';
+  for (let i = 0; i < DIGITS; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'slot' + (current[i] !== undefined ? ' filled' : '');
+    slot.textContent = current[i] !== undefined ? current[i] : '';
+    slotsEl.appendChild(slot);
+  }
+}
 
-guessInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-        handleGuess();
-    }
+function renderKeypad() {
+  keypadEl.innerHTML = '';
+  for (let n = 0; n <= 9; n++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = n;
+    btn.disabled = finished || current.includes(n) || current.length >= DIGITS;
+    btn.addEventListener('click', () => addDigit(n));
+    keypadEl.appendChild(btn);
+  }
+}
+
+function renderHistory() {
+  historyEl.innerHTML = '';
+  history.forEach(({ guess, hit, blow }) => {
+    const li = document.createElement('li');
+    li.innerHTML =
+      `<span class="guess">${guess.join('')}</span>` +
+      `<span class="result"><span class="hit">${hit} ヒット</span> / <span class="blow">${blow} ブロー</span></span>`;
+    historyEl.appendChild(li);
+  });
+  countEl.textContent = history.length ? `(${history.length}回)` : '';
+}
+
+function render() {
+  renderSlots();
+  renderKeypad();
+  renderHistory();
+  deleteBtn.disabled = finished || current.length === 0;
+  submitBtn.disabled = finished || current.length !== DIGITS;
+}
+
+function addDigit(n) {
+  if (finished || current.length >= DIGITS || current.includes(n)) return;
+  current.push(n);
+  setMessage('');
+  render();
+}
+
+function removeDigit() {
+  if (finished) return;
+  current.pop();
+  setMessage('');
+  render();
+}
+
+function submit() {
+  if (finished) return;
+  if (current.length !== DIGITS) {
+    setMessage(`${DIGITS}つの数字を選んでください。`, 'error');
+    return;
+  }
+  const { hit, blow } = judge(current, answer);
+  history.unshift({ guess: [...current], hit, blow });
+  current = [];
+
+  if (hit === DIGITS) {
+    finished = true;
+    setMessage(`正解です! ${history.length}回でクリアしました。答え: ${answer.join('')}`, 'win');
+  } else {
+    setMessage('');
+  }
+  render();
+}
+
+function restart() {
+  answer = createAnswer();
+  current = [];
+  history = [];
+  finished = false;
+  setMessage('');
+  render();
+}
+
+// キーボード操作
+document.addEventListener('keydown', (e) => {
+  if (/^[0-9]$/.test(e.key)) addDigit(Number(e.key));
+  else if (e.key === 'Backspace') removeDigit();
+  else if (e.key === 'Enter' && document.activeElement.tagName !== 'BUTTON') submit();
 });
 
-restartBtn.addEventListener('click', initGame);
+submitBtn.addEventListener('click', submit);
+deleteBtn.addEventListener('click', removeDigit);
+restartBtn.addEventListener('click', restart);
 
-// ゲーム開始
-initGame();
+restart();
