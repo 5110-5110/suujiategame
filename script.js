@@ -1,6 +1,6 @@
 'use strict';
 
-const DIGITS = 4; // 桁数
+const DIGITS = 3; // 桁数
 
 let answer = [];
 let current = [];
