@@ -12,7 +12,7 @@ function generateSecret() {
     let numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
     secretCode = [];
     
-    // 最初の数字は0以外にする（オプションですがより自然にするため）
+    // 最初の数字は0以外にする
     let firstIndex = Math.floor(Math.random() * 9) + 1; // 1〜9
     secretCode.push(numbers[firstIndex]);
     numbers.splice(firstIndex, 1);
@@ -77,7 +77,7 @@ function handleGuess() {
     
     const numSpan = document.createElement('span');
     numSpan.classList.add('history-num');
-    numSpan.textContent = `${attempts回: ${guessVal}}`;
+    numSpan.textContent = `${attempts}回目: ${guessVal}`; // 修正部分
 
     const resSpan = document.createElement('span');
     resSpan.classList.add('history-result');
