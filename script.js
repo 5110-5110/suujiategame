@@ -4,7 +4,7 @@ const DIGITS = 3; // 桁数
 
 let answer = [];
 let current = [];
-let history = [];
+let guessHistory = []; // 変数名衝突を防ぐため変更
 let finished = false;
 
 const slotsEl = document.getElementById('slots');
@@ -66,14 +66,14 @@ function renderKeypad() {
 
 function renderHistory() {
   historyEl.innerHTML = '';
-  history.forEach(({ guess, hit, blow }) => {
+  guessHistory.forEach(({ guess, hit, blow }) => {
     const li = document.createElement('li');
     li.innerHTML =
       `<span class="guess">${guess.join('')}</span>` +
-      `<span class="result"><span class="hit">${hit} ヒット</span> / <span class="blow">${blow} ブロー</span></span>`;
+      `<span class="result"><span class="hit">${hit} Hit</span> / <span class="blow">${blow} Blow</span></span>`;
     historyEl.appendChild(li);
   });
-  countEl.textContent = history.length ? `(${history.length}回)` : '';
+  countEl.textContent = guessHistory.length ? `(${guessHistory.length}回)` : '';
 }
 
 function render() {
@@ -105,12 +105,12 @@ function submit() {
     return;
   }
   const { hit, blow } = judge(current, answer);
-  history.unshift({ guess: [...current], hit, blow });
+  guessHistory.unshift({ guess: [...current], hit, blow });
   current = [];
 
   if (hit === DIGITS) {
     finished = true;
-    setMessage(`正解です! ${history.length}回でクリアしました。答え: ${answer.join('')}`, 'win');
+    setMessage(`🎉 正解です! ${guessHistory.length}回でクリアしました！ (答え: ${answer.join('')})`, 'win');
   } else {
     setMessage('');
   }
@@ -120,7 +120,7 @@ function submit() {
 function restart() {
   answer = createAnswer();
   current = [];
-  history = [];
+  guessHistory = [];
   finished = false;
   setMessage('');
   render();
