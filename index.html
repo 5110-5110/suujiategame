@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ヒットアンドブロー</title>
+  <title>ヒット＆ブロー</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <main class="game">
-    <h1>ヒットアンドブロー</h1>
-    <p class="rule">0〜9の数字を使った重複なしの3桁を当てよう。<br>
-      <strong>ヒット</strong>は数字も位置も正解、<strong>ブロー</strong>は数字だけ正解です。</p>
+    <div class="game-header">
+      <h1>Hit & Blow</h1>
+      <p class="rule">0〜9の数字を使った、重複なしの3桁を当てよう！<br>
+        <strong>ヒット</strong>：数字も位置も正解 / <strong>ブロー</strong>：数字だけ正解</p>
+    </div>
 
     <section class="input-area">
       <div id="slots" class="slots" aria-label="入力中の数字"></div>
@@ -23,7 +25,7 @@
     </section>
 
     <section class="history-area">
-      <h2>履歴 <span id="count"></span></h2>
+      <h2><span>履歴</span> <span id="count"></span></h2>
       <ol id="history" class="history"></ol>
     </section>
 
