@@ -23,6 +23,8 @@ function generateSecret() {
         secretCode.push(numbers[index]);
         numbers.splice(index, 1);
     }
+    
+    console.log("正解の数字 (テスト用):", secretCode.join('')); // デバッグ用
 }
 
 // ゲーム初期化
@@ -71,21 +73,23 @@ function handleGuess() {
         }
     }
 
-    // 履歴に追加
+    // 確実に要素を作成して追加
     const item = document.createElement('div');
-    item.classList.add('history-item');
+    item.className = 'history-item';
     
     const numSpan = document.createElement('span');
-    numSpan.classList.add('history-num');
-    numSpan.textContent = `${attempts}回目: ${guessVal}`; // 修正部分
+    numSpan.className = 'history-num';
+    numSpan.textContent = `${attempts}回目: ${guessVal}`;
 
     const resSpan = document.createElement('span');
-    resSpan.classList.add('history-result');
-    resSpan.textContent = `${hits} HIT - ${blows} BLOW`;
+    resSpan.className = 'history-result';
+    resSpan.textContent = `${hits} HIT / ${blows} BLOW`;
 
     item.appendChild(numSpan);
     item.appendChild(resSpan);
-    historyList.prepend(item); // 新しい結果を上に追加
+    
+    // 履歴リストの一番上に追加
+    historyList.insertBefore(item, historyList.firstChild);
 
     guessInput.value = '';
 
@@ -101,7 +105,6 @@ function handleGuess() {
 
 guessBtn.addEventListener('click', handleGuess);
 
-// エンターキーでも推測できるようにする
 guessInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
         handleGuess();
