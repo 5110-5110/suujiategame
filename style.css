@@ -70,7 +70,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .message.win { color: var(--hit); font-weight: 700; }
 
 .history { list-style: none; margin: 0; padding: 0; }
-.history:empty::after { content: "まだ予想がありません。数字を4つ選んでみましょう。"; color: var(--muted); font-size: 0.9rem; }
+.history:empty::after { content: "まだ予想がありません。数字を3つ選んでみましょう。"; color: var(--muted); font-size: 0.9rem; }
 .history li {
   display: flex; align-items: center; justify-content: space-between;
   padding: 8px 0; border-top: 1px solid var(--line);
